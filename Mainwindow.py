@@ -5,9 +5,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QLineEdit, QAbstractItemView, QHeaderView, QComboBox, QWidget, QVBoxLayout, QSplitter, \
-    QHBoxLayout, QPushButton, QTableView, QMenuBar, QStatusBar, QAction, QToolBar
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+    QHBoxLayout, QPushButton, QTableView, QMenuBar, QStatusBar, QAction, QToolBar, QMenu
 
+import my_navigation_toolbar_2qt
 from my_canvas_matplotlib import CanvasMatplotlib
 
 
@@ -15,6 +15,8 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1500, 800)
+        self.app_name = "FileAppReader"
+        MainWindow.setWindowTitle(self.app_name)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_central_widget = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -50,7 +52,7 @@ class Ui_MainWindow(object):
         self.spinBox_x.setRange(1, 999999)
         self.spinBox_x.setProperty("value", 0)
         self.spinBox_x.setObjectName("spinBox_x")
-        self.spinBox_x.setPrefix(" x - column :  ")
+        # self.spinBox_x.setPrefix(" x - column :  ")
         # self.spinBox_x.setSuffix("\t")
         # self.spinBox_x.setEnabled(False)
         self.horizontalLayout_spinbox.addWidget(self.spinBox_x)
@@ -81,7 +83,7 @@ class Ui_MainWindow(object):
         self.spinBox_y.setValue(2)
 
         self.spinBox_y.setObjectName("spinBox_y")
-        self.spinBox_y.setPrefix(" y - column :  ")
+        # self.spinBox_y.setPrefix(" y - column :  ")
         # self.spinBox_y.setEnabled(False)
 
         self.horizontalLayout_spinbox.addWidget(self.spinBox_y)
@@ -270,8 +272,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QVBoxLayout(self.widget_rigth)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.texte = QLineEdit("   'Ctrl + click' : Select a point"
-                               )
+        self.texte = QLineEdit(  # "   'Ctrl + click' : Select a point"
+        )
         self.texte.setReadOnly(True)
         self.texte.setStyleSheet('''
                            QLineEdit { border: 1px solid darkGray;
@@ -292,7 +294,10 @@ class Ui_MainWindow(object):
         self.mycanvas.setFont(font)
         self.mycanvas.setObjectName("graphicsView")
 
-        self.toolbar = NavigationToolbar(self.mycanvas, self.centralwidget)
+        # self.toolbar = MyNavigationToolbar2QT.MyNavigationToolbar2QT(self.mycanvas, self.centralwidget)
+        # self.toolbar = NavigationToolbar(self.mycanvas, self.centralwidget)
+        self.toolbar = my_navigation_toolbar_2qt.MyNavigationToolbar2QT(self.mycanvas, self.centralwidget)
+
         self.toolbar.setStyleSheet("QToolBar{ border: 1px solid darkGray;\n"
                                    "                                gridline-color: blue;\n"
                                    "                                border-radius: 4px;\n"
@@ -327,16 +332,35 @@ class Ui_MainWindow(object):
         self.menubar.setGeometry(QtCore.QRect(0, 0, 799, 30))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
+        self.menu_parameter = QMenu(self.menubar)
+        # self.actionbtn_preferences = QAction(MainWindow)
+        # self.actionbtn_preferences.setText("Preferences")
+        # self.actionbtn_preferences.setObjectName("actionbtn_preferences")
+        self.menu_parameter.setObjectName("menu_parameter")
+        self.menu_parameter.setTitle("Parameters")
+        # self.menu_parameter.addAction(self.actionbtn_preferences)
+
+        self.menu_preferences = QMenu(self.menu_parameter)
+        self.menu_preferences.setObjectName("menu_preferences")
+        self.menu_preferences.setTitle("Preferences")
+        self.actionbtn_localization = QAction(MainWindow)
+        self.actionbtn_localization.setObjectName("actionbtn_localization")
+        self.actionbtn_localization.setText("localization")
+        self.menu_preferences.addAction(self.actionbtn_localization)
+
+        self.menu_parameter.addAction(self.menu_preferences.menuAction())
+        self.menubar.addAction(self.menu_parameter.menuAction())
+
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+
         self.toolBar = QToolBar(MainWindow)
         self.toolBar.setObjectName("toolBar")
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
         self.actionbtn_open = QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("resources/gtk-open.png"), QIcon.Normal, QIcon.On)
-
         self.actionbtn_open.setIcon(icon)
         self.actionbtn_open.setObjectName("actionbtn_open")
         self.toolBar.addAction(self.actionbtn_open)
@@ -344,7 +368,6 @@ class Ui_MainWindow(object):
         self.actionbtn_save_as = QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("resources/gtk-save-as.png"), QIcon.Normal, QIcon.On)
-
         self.actionbtn_save_as.setIcon(icon)
         self.actionbtn_save_as.setObjectName("actionbtn_save_as")
         self.toolBar.addAction(self.actionbtn_save_as)
@@ -355,114 +378,179 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        self.name_app = "FileReaderApp"
-        MainWindow.setWindowTitle(_translate("MainWindow", self.name_app))
-        self.spinBox_x.setToolTip(_translate("MainWindow",
-                                             "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
-                                             "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
-                                             "text-indent:0px;\"><span style=\" font-size:10pt; "
-                                             "color:#0000ff;\">Indicate the column number corresponding to "
-                                             "x</span></pre></body></html>"))
-        self.spinBox_y.setToolTip(_translate("MainWindow",
-                                             "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
-                                             "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
-                                             "text-indent:0px;\"><span style=\" font-size:10pt; "
-                                             "color:#0000ff;\">Indicate the column number corresponding to "
-                                             "y</span></pre></body></html>"))
-        self.comboBox.setToolTip(_translate("MainWindow",
-                                            "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
-                                            "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
-                                            "text-indent:0px;\"><span style=\" font-size:10pt; "
-                                            "color:#0000ff;\">Choose the column separator</span></pre></body></html>"))
+        # self.MainWindow = MainWindow
+        # self.name_app = "FileReaderApp"
+        # self.path_file = ""
+        # self.MainWindow.setWindowTitle(f"{self.name_app} {self.path_file}")
+        # MainWindow.setWindowTitle(_translate("MainWindow", self.name_app))
+        self.menu_parameter.setTitle(_translate("MainWindow", "Parameters"))
+        self.menu_preferences.setTitle(_translate("MainWindow", "Preferences"))
+        self.actionbtn_localization.setText(_translate("MainWindow", "Localization"))
+        self.spinBox_x.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
+            "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
+            "text-indent:0px;\"><span style=\" font-size:10pt; "
+            "color:#0000ff;\">" +
+            _translate("MainWindow", "Indicate the column number corresponding to x") +
+            "</span></pre></body></html>")
+        self.spinBox_x.setPrefix(_translate("MainWindow", " x - column :  "))
+
+        self.spinBox_y.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
+            "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
+            "text-indent:0px;\"><span style=\" font-size:10pt; "
+            "color:#0000ff;\">" +
+            _translate("MainWindow", "Indicate the column number corresponding to y") +
+            "</span></pre></body></html>")
+        self.spinBox_y.setPrefix(_translate("MainWindow", " y - column :  "))
+
+        self.comboBox.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
+            "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
+            "text-indent:0px;\"><span style=\" font-size:10pt; "
+            "color:#0000ff;\">" +
+            _translate("MainWindow", "Choose the column separator") +
+            "</span></pre></body></html>")
+
         self.comboBox.setItemText(0, _translate("MainWindow", "Semicolon"))
+        #  self.comboBox.addItem(_translate("MainWindow", "Semicolon"))
         self.comboBox.setItemText(1, _translate("MainWindow", "Comma"))
         self.comboBox.setItemText(2, _translate("MainWindow", "Character tabulation"))
         self.comboBox.setItemText(3, _translate("MainWindow", "Space"))
-        self.btn_add.setToolTip(_translate("MainWindow",
-                                           "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
-                                           "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
-                                           "text-indent:0px;\"><span style=\" font-size:10pt; color:#0000ff;\">Add "
-                                           "row</span></pre></body></html>"))
-        self.btn_add.setText(_translate("MainWindow", ""))
-        self.btn_delete.setToolTip(_translate("MainWindow",
-                                              "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
-                                              "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
-                                              "text-indent:0px;\"><span style=\" font-size:10pt; "
-                                              "color:#0000ff;\">Delete the selected row</span></pre></body></html>"))
-        self.btn_delete.setText(_translate("MainWindow", ""))
-        self.btn_sort_x_asc.setToolTip(_translate("MainWindow",
-                                                  "<html><head/><body><pre style=\" margin-top:12px; "
-                                                  "margin-bottom:12px; margin-left:0px; margin-right:0px; "
-                                                  "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
-                                                  "font-size:10pt; color:#0000ff;\">Sort by ascending "
-                                                  "x</span></pre></body></html>"))
-        self.btn_sort_x_asc.setText(_translate("MainWindow", ""))
-        self.btn_sort_x_desc.setToolTip(_translate("MainWindow",
-                                                   "<html><head/><body><pre style=\" margin-top:12px; "
-                                                   "margin-bottom:12px; margin-left:0px; margin-right:0px; "
-                                                   "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
-                                                   "font-size:10pt; color:#0000ff;\">Sort by descending "
-                                                   "x</span></pre></body></html>"))
-        self.btn_sort_x_desc.setText(_translate("MainWindow", ""))
 
-        self.btn_sort_y_asc.setToolTip(_translate("MainWindow",
-                                                  "<html><head/><body><pre style=\" margin-top:12px; "
-                                                  "margin-bottom:12px; margin-left:0px; margin-right:0px; "
-                                                  "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
-                                                  "font-size:10pt; color:#0000ff;\">Sort by ascending "
-                                                  "y</span></pre></body></html>"))
-        self.btn_sort_y_asc.setText(_translate("MainWindow", ""))
-        self.btn_sort_y_desc.setToolTip(_translate("MainWindow",
-                                                   "<html><head/><body><pre style=\" margin-top:12px; "
-                                                   "margin-bottom:12px; margin-left:0px; margin-right:0px; "
-                                                   "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
-                                                   "font-size:10pt; color:#0000ff;\">Sort by descending "
-                                                   "y</span></pre></body></html>"))
-        self.btn_sort_y_desc.setText(_translate("MainWindow", ""))
-        self.btn_move_up.setToolTip(_translate("MainWindow",
-                                               "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
-                                               "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
-                                               "text-indent:0px;\"><span style=\" font-size:10pt; "
-                                               "color:#0000ff;\">Move up selected row</span></pre></body></html>"))
-        self.btn_move_up.setText(_translate("MainWindow", ""))
-        self.btn_move_down.setToolTip(_translate("MainWindow",
-                                                 "<html><head/><body><pre style=\" margin-top:12px; "
-                                                 "margin-bottom:12px; margin-left:0px; margin-right:0px; "
-                                                 "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
-                                                 "font-size:10pt; color:#0000ff;\">Move down selected "
-                                                 "row</span></pre></body></html>"))
-        self.btn_move_down.setText(_translate("MainWindow", ""))
-        self.btn_copy.setToolTip(_translate("MainWindow",
-                                            "<html><head/><body><pre style=\" margin-top:12px; "
-                                            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
-                                            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
-                                            "font-size:10pt; color:#0000ff;\">Copy selected "
-                                            "row</span></pre></body></html>"))
-        self.btn_copy.setText(_translate("MainWindow", ""))
+        # self.comboBox.addItem(_translate("MainWindow", "Semicolon"))
+        # self.comboBox.addItem(_translate("MainWindow", "Comma"))
+        # self.comboBox.addItem(_translate("MainWindow", "Character tabulation"))
+        # self.comboBox.addItem(_translate("MainWindow", "Space"))
 
-        self.btn_paste.setToolTip(_translate("MainWindow",
-                                             "<html><head/><body><pre style=\" margin-top:12px; "
-                                             "margin-bottom:12px; margin-left:0px; margin-right:0px; "
-                                             "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
-                                             "font-size:10pt; color:#0000ff;\">Paste selected "
-                                             "row</span></pre></body></html>"))
-        self.btn_paste.setText(_translate("MainWindow", ""))
-        self.texte.setToolTip(_translate("MainWindow",
-                                         "<html><head/><body><pre style=\" margin-top:12px; "
-                                         "margin-bottom:12px; margin-left:0px; margin-right:0px; "
-                                         "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
-                                         "font-size:10pt; \">Press the CTRL + CLICK key "
-                                         "combination to find the row \nof the table corresponding to the point "
-                                         "targeted</span></pre></body></html>"))
+        # self.list_sep = {'Semicolon': ';', 'Comma': ',', 'Character tabulation': '\t', 'Space': ' '}
+        # for cle, valeur in self.list_sep.items():
+        #     #self.comboBox.addItems(['{}'.format(cle)])
+        #     _translate("MainWindow", str(cle))
+
+        # self.list_sep = {_translate("MainWindow", "Semicolon"): ';', _translate("MainWindow", "Comma"): ',',
+        #                  _translate("MainWindow", "Character tabulation"): '\t', _translate("MainWindow","Space"): ' '}
+        # for cle, valeur in self.list_sep.items():
+        #     self.comboBox.addItems(['{}'.format(cle)])
+        #     print(cle)
+        # print(self.list_sep)
+
+        # options = ([('English', ''), ('Français', 'eng-fr'), ('中文', 'eng-chs'), ])
+        # for i, (text, lang) in enumerate(options):
+        #     self.comboBox.addItem(text)
+        #     self.comboBox.setItemData(i, lang)
+
+        self.btn_add.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
+            "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
+            "text-indent:0px;\"><span style=\" font-size:10pt; color:#0000ff;\">" +
+            _translate("MainWindow", "Add row") +
+            "</span></pre></body></html>")
+        # self.btn_add.setText(_translate("MainWindow", ""))
+
+        self.btn_delete.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
+            "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
+            "text-indent:0px;\"><span style=\" font-size:10pt; "
+            "color:#0000ff;\">" +
+            _translate("MainWindow", "Delete the selected row") +
+            "</span></pre></body></html>")
+        # self.btn_delete.setText(_translate("MainWindow", ""))
+
+        self.btn_sort_x_asc.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; "
+            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
+            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
+            "font-size:10pt; color:#0000ff;\">" +
+            _translate("MainWindow", "Sort by ascending x") +
+            "</span></pre></body></html>")
+        # self.btn_sort_x_asc.setText(_translate("MainWindow", ""))
+
+        self.btn_sort_x_desc.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; "
+            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
+            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
+            "font-size:10pt; color:#0000ff;\">" +
+            _translate("MainWindow", "Sort by descending x") +
+            "</span></pre></body></html>")
+        # self.btn_sort_x_desc.setText(_translate("MainWindow", ""))
+
+        self.btn_sort_y_asc.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; "
+            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
+            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
+            "font-size:10pt; color:#0000ff;\" >" +
+            _translate("MainWindow", "Sort by ascending y") +
+            "</span></pre></body></html>")
+        # self.btn_sort_y_asc.setText(_translate("MainWindow", ""))
+
+        self.btn_sort_y_desc.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; "
+            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
+            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
+            "font-size:10pt; color:#0000ff;\" >" +
+            _translate("MainWindow", "Sort by descending y") +
+            "</span></pre></body></html>")
+        # self.btn_sort_y_desc.setText(_translate("MainWindow", ""))
+
+        self.btn_move_up.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; "
+            "margin-left:0px; margin-right:0px; -qt-block-indent:0; "
+            "text-indent:0px;\"><span style=\" font-size:10pt; "
+            "color:#0000ff;\" >" +
+            _translate("MainWindow", "Move up selected row") +
+            "</span></pre></body></html>")
+        # self.btn_move_up.setText(_translate("MainWindow", ""))
+
+        self.btn_move_down.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; "
+            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
+            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
+            "font-size:10pt; color:#0000ff;\" >"
+            + _translate("MainWindow", "Move down selected row") +
+            "</span></pre></body></html>")
+        # self.btn_move_down.setText(_translate("MainWindow", ""))
+
+        self.btn_copy.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; "
+            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
+            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
+            "font-size:10pt; color:#0000ff;\">" +
+            _translate("MainWindow", "Copy selected row") +
+            "</span></pre></body></html>")
+        # self.btn_copy.setText(_translate("MainWindow", ""))
+
+        self.btn_paste.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; "
+            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
+            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
+            "font-size:10pt; color:#0000ff;\">" +
+            _translate("MainWindow", "Paste selected row") +
+            "</span></pre></body></html>")
+        # self.btn_paste.setText(_translate("MainWindow", ""))
+
+        self.texte.setToolTip(
+            "<html><head/><body><pre style=\" margin-top:12px; "
+            "margin-bottom:12px; margin-left:0px; margin-right:0px; "
+            "-qt-block-indent:0; text-indent:0px;\"><span style=\" "
+            "font-size:10pt; \">" +
+            _translate("MainWindow", "Press the CTRL + CLICK key "
+                                     "combination to find the row \nof the table corresponding to the point "
+                                     "targeted") +
+            "</span></pre></body></html>")
         # self.texte.setText(_translate("MainWindow", "Select a point"))
-        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
-        self.actionbtn_open.setText(_translate("MainWindow", "btn_open"))
+        self.texte.setText(_translate("MainWindow", "   'Ctrl + click' : Select a point"))
+        self.checkbox_isometric_view.setText(_translate("MainWindow", "Isometric view"))
+
+        # self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
+        # self.actionbtn_open.setText(_translate("MainWindow", "btn_open"))
+
         self.actionbtn_open.setToolTip(_translate("MainWindow", "Select file (Ctrl+O)"))
         self.actionbtn_open.setShortcut(_translate("MainWindow", "Ctrl+O"))
-
         self.actionbtn_save_as.setText(_translate("MainWindow", "btn_save_as"))
         self.actionbtn_save_as.setToolTip(_translate("MainWindow", "Save as file  (Ctrl+S)"))
         self.actionbtn_save_as.setShortcut(_translate("MainWindow", "Ctrl+S"))
+        self.toolbar.toolitems_translation()  # pour l'internationalisation des tooltip de la toolbar
 
 
 class SpinBox(QtWidgets.QSpinBox):

@@ -10,22 +10,25 @@ import sys
 import pathlib
 
 import pandas as pd
-from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtCore import QSettings, Qt, QEvent
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtCore import QSettings, Qt, QEvent, QTranslator, QLocale
 from PyQt5.QtWidgets import QFileDialog, QApplication
+from PyQt5.QtCore import QEvent
 
 from Mainwindow import Ui_MainWindow
 from qtableview_model import PandasModelEditable, Delegate
 import mpl_canvas_onpick_event
 import message_box
+import localization_widget
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
+
     def __init__(self):
         super(ApplicationWindow, self).__init__()
-
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self._translate = QtCore.QCoreApplication.translate
         self.filename = None
         self.file_extension = None
         self.x_label = "x"
@@ -38,10 +41,29 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.setup_tableview()
         self.setup_connections()
         self.graph()
-        if self.model:
-            self.model.dataChanged.connect(
-                self.graph)  # permet de mettre à jour le graphique lorsqu'on modifie et tape sur la touche ENTREE
 
+        self.list_wind_loc = []
+        self.ui.retranslateUi(self)
+        # if self.model:
+        self.model.dataChanged.connect(
+            self.graph)  # permet de mettre à jour le graphique lorsqu'on modifie et tape sur la touche ENTREE
+        # self.retranslate_main()
+
+    # def retranslate_main(self):
+    #     self._translate = QtCore.QCoreApplication.translate
+    #     self.wind_title = self._translate("ApplicationWindow",
+    #                                       " ~ Open file : ")
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            self.ui.retranslateUi(self)
+      #      self.ui.toolbar.update_toolitems()
+#            self.ui.toolbar.update_toolbar()
+            print(self.ui.toolbar.toolitems)
+            print(self.ui.toolbar.toolitems[0])
+            # self.retranslate_main()
+            print("event.type() == QEvent.LanguageChange ==> Ok")
+        super(ApplicationWindow, self).changeEvent(event)
 
     def setup_connections(self):
         self.ui.actionbtn_open.triggered.connect(self.open_file_dialog)
@@ -64,6 +86,21 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.comboBox.currentTextChanged.connect(self.update_tableview)
         self.ui.checkbox_isometric_view.stateChanged.connect(self.isometric_view)
 
+        self.ui.actionbtn_localization.triggered.connect(self.change_localization)
+
+    def change_localization(self):
+        if not self.list_wind_loc:
+            self.wind_change_loc = localization_widget.Localization(self)
+            self.wind_change_loc.setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)
+            self.wind_change_loc.show()
+            self.list_wind_loc.append(self.wind_change_loc)
+        else:
+            print("il y en a déjà")
+            self.list_wind_loc[0].setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)  # Qt.CustomizeWindowHint )#)
+            self.list_wind_loc[0].show()
+
+        print("....")
+
     def setup_tableview(self):
         self.model = PandasModelEditable(pd.DataFrame({"x": [], "y": []}))
         self.ui.tableView.setModel(self.model)
@@ -83,21 +120,41 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.ui.tableView.setModel(self.model)
 
+    def update_window_title(self, filename=""):
+        self.setWindowTitle(self.ui.app_name + self._translate("ApplicationWindow",
+                                                               " ~ Open file : ") + filename)
+
     def open_file_dialog(self):
         options = QFileDialog.Options()
-        DEFAULT_DIRECTORY = '/home/'
-        settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'MyOrg', )  # application='MyApp', )
-        current_dir = settings.value('current_directory', DEFAULT_DIRECTORY, type=str)
         options |= QFileDialog.DontUseNativeDialog
+        DEFAULT_DIRECTORY = '/home/'
+        settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'MyOrg', application='MyApp', )
+        current_dir = settings.value('current_directory', DEFAULT_DIRECTORY, type=str)
 
-        self.filename, _ = QFileDialog.getOpenFileName(self, 'Open a file ', current_dir,
-                                                       "CSV Files (*.csv);;Text Files (*.txt);;HDF5 Files ("
-                                                       "*.h5);;All Files (*)",
+        self.filename, _ = QFileDialog.getOpenFileName(self, self._translate("ApplicationWindow",
+                                                                             "Open file ")
+                                                       , current_dir,
+                                                       self._translate("ApplicationWindow",
+                                                                       "CSV Files (*.csv)") + ";;" +
+                                                       self._translate("ApplicationWindow",
+                                                                       "Text Files (*.txt)") + ";;" +
+                                                       self._translate("ApplicationWindow",
+                                                                       "HDF5 Files (*.h5)") + ";;" +
+                                                       self._translate("ApplicationWindow",
+                                                                       "All Files (*)"),
                                                        options=options)
+
+        myappTranslator = QTranslator()
+        myappTranslator.load("myapp_" + QLocale.system().name())
+        print(QLocale.system().name())
+        app.installTranslator(myappTranslator)
         current_dir = os.path.split(self.filename)[0] or DEFAULT_DIRECTORY
         settings.setValue('current_directory', current_dir)
         if self.filename and self.filename != "":
-            self.setWindowTitle(self.ui.name_app + " ~ Open file : " + self.filename)
+            self.update_window_title(self.filename)
+            # self.setWindowTitle(self.ui.app_name + self._translate("ApplicationWindow",
+            #                                                        " ~ Open file : ") + self.filename)
+
             print("Open file :", self.filename)
             self.ui.spinBox_x.setEnabled(True)
             self.ui.spinBox_y.setEnabled(True)
@@ -111,10 +168,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if self.filename:
             self.setup_model()
             self.graph()
+            self.model.dataChanged.connect(self.graph)
 
     def _get_xy_txt_csv(self):
         print(self.ui.comboBox.currentText())
-        data_delimiter = self.ui.list_sep['{}'.format(self.ui.comboBox.currentText())]
+        # data_delimiter = self.ui.list_sep['{}'.format(self.ui.comboBox.currentText())]
+        print("cccc", self.ui.comboBox.currentIndex())
+        list_combobox_values = list(self.ui.list_sep.values())
+        data_delimiter = list_combobox_values[self.ui.comboBox.currentIndex()]
+
         df = pd.read_csv(str(self.filename), delimiter=data_delimiter, skipinitialspace=True,
                          doublequote=True,
                          comment='*')
