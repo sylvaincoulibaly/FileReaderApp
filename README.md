@@ -13,3 +13,9 @@ Elle propose les fonctionnalités suivantes :
 * Déplacer un point, 
 * Copier/coller depuis le tableau (à gauche de l'interafce) ou un tableur, 
 * L'internationalisation de l'application.
+
+
+
+
+
+
