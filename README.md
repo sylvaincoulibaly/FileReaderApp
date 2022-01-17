@@ -1,7 +1,6 @@
 # FileReaderApp 
 
->>>>>>> refs/remotes/origin/master
-> 
+
 FileReaderApp est une application qui permet de récupérer
 deux colonnes d'un fichier au format .csv dans un tableau et
 tracer l'une des colonnes en fonction de l'autre.
