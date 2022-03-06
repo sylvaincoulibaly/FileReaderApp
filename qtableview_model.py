@@ -1,10 +1,12 @@
 import pandas as pd
 
 from PyQt5.QtWidgets import QMessageBox, QStyledItemDelegate, QLineEdit
-from PyQt5.QtCore import QModelIndex, Qt, QAbstractTableModel, QVariant
+from PyQt5.QtCore import QModelIndex, Qt, QAbstractTableModel, QVariant, pyqtSignal, pyqtSlot
 
 
 class PandasModelEditable(QAbstractTableModel):
+    dataChanged = pyqtSignal(int, int, name="dataChanged")
+
     def __init__(self, data: pd.DataFrame, table_header=None):
         QAbstractTableModel.__init__(self)
         if table_header is None:
@@ -52,7 +54,7 @@ class PandasModelEditable(QAbstractTableModel):
         """ Pour afficher les numéros de ligne : """
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
             return self._data.index[section] + 1
-        return None
+        return QVariant()
 
     def setData(self, index, value, role=Qt.EditRole):
         # row = index.row()
@@ -134,12 +136,8 @@ class PandasModelEditable(QAbstractTableModel):
 
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
-        # if index.column() == 0:
-        #     return Qt.ItemIsSelectable | Qt.ItemIsEnabled  # la colonne des abscisses n'est pas éditable
-        # else:
-        #     return Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
-    # @QtCore.pyqtSlot()
+    @pyqtSlot()
     def insertRows(self, row, count, parent=QModelIndex()):
         self.beginInsertRows(parent, row, row + count - 1)
         indexes = [str(self.rowCount() + i) for i in range(count)]
@@ -157,14 +155,15 @@ class PandasModelEditable(QAbstractTableModel):
         self.endInsertRows()
         # print(self.profile.dtypes)
         # print(mid.dtypes)
+        self.dataChanged.emit(parent, parent)
         self.layoutChanged.emit()
 
     # @QtCore.pyqtSlot()
     def removeRows(self, row, count, parent=QModelIndex()):
         self.beginRemoveRows(parent, row, row + count + 1)
         self._data.drop(self._data.index[row], inplace=True)
-
         self.endRemoveRows()
+        self.dataChanged.emit(parent, parent)
         self.layoutChanged.emit()
         print(self._data)
 
@@ -187,16 +186,17 @@ class PandasModelEditable(QAbstractTableModel):
         # éviter le "plantage" du programme lors de l'appel de certaines fonctionnalités, telle que le
         # copier/coller
         self.endRemoveRows()
-
+        self.dataChanged.emit(parent, parent)
         self.layoutChanged.emit()
 
-    def sort(self, column, order=Qt.AscendingOrder):
+    def sort(self, column, order=Qt.AscendingOrder, parent=QModelIndex()):
         self.layoutAboutToBeChanged.emit()
         colname = self._data.columns.tolist()[column]
         self._data.sort_values(colname, ascending=order == Qt.AscendingOrder, inplace=True)
         self._data.reset_index(inplace=True, drop=True)
         print(self._data)
         self.layoutChanged.emit()
+        self.dataChanged.emit(parent, parent)
 
     def moveRowDown(self, row_to_move, parent=QModelIndex()):
         target = row_to_move + 2
@@ -212,22 +212,20 @@ class PandasModelEditable(QAbstractTableModel):
         self._data = pd.concat([block_before_row, after_selcted_row, selected_row, block_after_row], axis=0)
         self._data.reset_index(inplace=True, drop=True)
         self.endMoveRows()
+        self.dataChanged.emit(parent, parent)
         self.layoutChanged.emit()
 
     def moveRowUp(self, row_to_move, parent=QModelIndex()):
         target = row_to_move + 1
         self.beginMoveRows(parent, row_to_move - 1, row_to_move - 1, parent, target)
         block_before_row = self._data.iloc[0:row_to_move - 1]
-        #   print(block_before_row)
         before_selected_row = self._data.iloc[row_to_move - 1:row_to_move]
-        #  print(before_selected_row)
         selected_row = self._data.iloc[row_to_move:row_to_move + 1]
-        #     print(selected_row)
         block_after_row = self._data.iloc[row_to_move + 1:self.rowCount()]
-        # print(rblock_after_row)
         self._data = pd.concat([block_before_row, selected_row, before_selected_row, block_after_row], axis=0)
         self._data.reset_index(inplace=True, drop=True)
         self.endMoveRows()
+        self.dataChanged.emit(parent, parent)
         self.layoutChanged.emit()
 
     def copy_table(self, start_selection, end_selection):
@@ -245,12 +243,13 @@ class PandasModelEditable(QAbstractTableModel):
         """
         return df.iloc[:idx, ].append(df_insert).append(df.iloc[idx:, ]).reset_index(drop=True)
 
-    def paste_table(self, insertion_index):
+    def paste_table(self, insertion_index, parent=QModelIndex()):
         self.layoutAboutToBeChanged.emit()
         df = pd.read_clipboard(header=None, skip_blank_lines=True, sep="\t",
                                names=self.header)
         self._data = self.insert_df_to_idx(insertion_index, self._data, df)
         print(self._data)
+        self.dataChanged.emit(parent, parent)
         self.layoutChanged.emit()
 
     @property
@@ -358,7 +357,7 @@ class Delegate(QStyledItemDelegate):
         """
         model.setData(index, editor.text())
         # if self.setModelDataEvent is not None:
-        if not self.setModelDataEvent is None:
+        if self.setModelDataEvent is not None:
             self.setModelDataEvent()
         row = index.row()
         col = index.column()
