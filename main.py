@@ -11,7 +11,7 @@ import pathlib
 
 import pandas as pd
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QSettings, Qt, QEvent, QTranslator, QLocale
+from PyQt5.QtCore import QSettings, Qt, QTranslator, QLocale
 from PyQt5.QtWidgets import QFileDialog, QApplication
 from PyQt5.QtCore import QEvent
 
@@ -25,7 +25,7 @@ import localization_widget
 class ApplicationWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
-        super(ApplicationWindow, self).__init__()
+        super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self._translate = QtCore.QCoreApplication.translate
@@ -37,16 +37,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.spinBox_y.setEnabled(False)
         # self.ui.comboBox.setEnabled(False)
 
-        self.model = None
+        # self.model = None
         self.setup_tableview()
         self.setup_connections()
         self.graph()
-
         self.list_wind_loc = []
         self.ui.retranslateUi(self)
         # if self.model:
-        self.model.dataChanged.connect(
-            self.graph)  # permet de mettre à jour le graphique lorsqu'on modifie et tape sur la touche ENTREE
+        self.model.dataChanged.connect(self.graph)  # permet de mettre à jour le graphique lorsqu'on modifie et tape
+        # sur la touche ENTREE
         # self.retranslate_main()
 
     # def retranslate_main(self):
@@ -57,8 +56,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     def changeEvent(self, event):
         if event.type() == QEvent.LanguageChange:
             self.ui.retranslateUi(self)
-      #      self.ui.toolbar.update_toolitems()
-#            self.ui.toolbar.update_toolbar()
             print(self.ui.toolbar.toolitems)
             print(self.ui.toolbar.toolitems[0])
             # self.retranslate_main()
@@ -90,16 +87,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def change_localization(self):
         if not self.list_wind_loc:
-            self.wind_change_loc = localization_widget.Localization(self)
-            self.wind_change_loc.setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)
-            self.wind_change_loc.show()
-            self.list_wind_loc.append(self.wind_change_loc)
+            wind_change_loc = localization_widget.Localization(parent=self)
+            wind_change_loc.setWindowFlags(Qt.Dialog)
+            self.list_wind_loc.append(wind_change_loc)
+            # wind_change_loc.setWindowFlags(Qt.WindowStaysOnTopHint)
+            wind_change_loc.show()
         else:
-            print("il y en a déjà")
-            self.list_wind_loc[0].setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)  # Qt.CustomizeWindowHint )#)
+            self.list_wind_loc[0].setWindowFlags(Qt.Dialog)
             self.list_wind_loc[0].show()
-
-        print("....")
 
     def setup_tableview(self):
         self.model = PandasModelEditable(pd.DataFrame({"x": [], "y": []}))
@@ -307,37 +302,44 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         if len(selected_row) > 0:
             self.model.remove_rows(selected_row)
-        self.graph()
+
+    #  self.graph()
 
     def sort_x_ascending(self):
         self.model.sort(0, order=Qt.AscendingOrder)
-        self.graph()
+
+    # self.graph()
 
     def sort_x_descending(self):
         self.model.sort(0, order=Qt.DescendingOrder)
-        self.graph()
+
+    #   self.graph()
 
     def sort_y_ascending(self):
         self.model.sort(1, order=Qt.AscendingOrder)
-        self.graph()
+
+    #  self.graph()
 
     def sort_y_descending(self):
         self.model.sort(1, order=Qt.DescendingOrder)
-        self.graph()
+
+    #    self.graph()
 
     def move_row_down(self):
         rows = list(set([index.row() for index in self.ui.tableView.selectedIndexes()]))
         for row in rows:
             if row < self.model.rowCount() - 1:  # on s'arrête à la dernière ligne du tableau
                 self.model.moveRowDown(row)
-        self.graph()
+
+    #   self.graph()
 
     def move_row_up(self):
         rows = list(set([index.row() for index in self.ui.tableView.selectedIndexes()]))
         for row in rows:
             if 0 < row:  # on s'arrête lorsqu'on est à l'index 0 ie la première ligne
                 self.model.moveRowUp(row)
-        self.graph()
+
+    # self.graph()
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.KeyPress:
@@ -451,7 +453,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 # except:
                 #     print("Le collage n'est pas réussi")
             print(rows)
-        self.graph()
+    #  self.graph()
 
 
 if __name__ == "__main__":
