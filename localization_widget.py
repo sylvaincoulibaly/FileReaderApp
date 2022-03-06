@@ -2,20 +2,22 @@
 
 import sys
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt, QEvent
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QEvent, Qt
 
 
 class Ui_Localization(object):
     def setupUi(self, Localization):
         Localization.setObjectName("Localization")
-        Localization.resize(500, 150)
-        #Localization.setWindowFlags(Qt.WindowCloseButtonHint )
+
+        #  Localization.resize(500, 150)
+        Localization.setFixedSize(500, 150)
+        # Localization.setWindowFlags(Qt.WindowCloseButtonHint )
         self.label = QtWidgets.QLabel(Localization)
         self.label.setGeometry(QtCore.QRect(100, 50, 120, 30))
         self.label.setObjectName("label")
         self.comboBox = QtWidgets.QComboBox(Localization)
-        self.comboBox.setGeometry(QtCore.QRect(230, 50, 120, 30))
+        self.comboBox.setGeometry(QtCore.QRect(230, 50, 120, 40))
         self.comboBox.setObjectName("comboBox")
         # self.comboBox.addItem("")
         # self.comboBox.addItem("en-fr")
@@ -41,11 +43,11 @@ class Localization(QtWidgets.QWidget):
         super(Localization, self).__init__(self.parent)
         self.ui = Ui_Localization()
         self.ui.setupUi(self)
-        # self.setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)
-        self.ui.comboBox.currentIndexChanged.connect(self.change_func)
 
+        # self.setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)
         self.trans = QtCore.QTranslator(self)
         self.ui.retranslateUi(self)
+        self.ui.comboBox.currentIndexChanged.connect(self.change_func)
 
     @QtCore.pyqtSlot(int)
     def change_func(self, index):
