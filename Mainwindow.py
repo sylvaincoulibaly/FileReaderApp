@@ -17,6 +17,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(1500, 800)
         self.app_name = "FileAppReader"
         MainWindow.setWindowTitle(self.app_name)
+        MainWindow.setWindowIcon(QIcon("resources/app_icon.png"))
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_central_widget = QtWidgets.QHBoxLayout(self.centralwidget)
